@@ -5,5 +5,14 @@
     "login_button": "Iniciar Sesión",
     "username": "Nombre de Usuario",
     "email": "Correo Electrónico",
-    "password": "Contraseña"
+    "password": "Contraseña",
+    "developers_message": "Diseñado y Desarrollado por BPS Technology Consulting",
+
+
+    "language": "Lenguaje",
+    "see_profile": "Ver Perfil",
+
+
+
+    "export": "Exportar"
 }

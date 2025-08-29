@@ -12,6 +12,20 @@ class AppIconSizes {
   static const double profile = 30;
 }
 
+//Field upper/lower bounds for validation
+const int latitudeMin = -180;
+const int latitudeMax = 180;
+const int longitudeMin = -180;
+const int longitudeMax = 180;
+const int streetWidthMax = 8; //8m
+const int planterLengthMax = 3; //3m
+const int planterWidthMax = 3; //3m
+const int heightMax = 30; //30m
+const int stemPerimeterMax = 300; //300cm
+const int stemInclinationMax = 90; //90°
+const int photosMax = 5;
+const int charactersMax = 500;
+
 // Standard padding/margin
 class AppSpacing {
   static const double xxs = 2.0;

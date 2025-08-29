@@ -81,4 +81,16 @@ class AppTextStyles {
     color: Colors.black,
     fontWeight: FontWeight.bold,
   );
+
+  static final TextStyle columnTitleTextStyle = GoogleFonts.montserrat(
+    fontSize: 14,
+    color: Colors.black,
+    fontWeight: FontWeight.bold,
+  );
+
+  static final TextStyle rowDataTextStyle = GoogleFonts.montserrat(
+    fontSize: 14,
+    color: Colors.black,
+    fontWeight: FontWeight.normal,
+  );
 }
