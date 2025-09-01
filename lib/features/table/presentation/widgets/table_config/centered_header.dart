@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CenteredHeader extends StatelessWidget {
   final String title;
   final bool isSorted;
-  const CenteredHeader(this.title, {this.isSorted = false});
+  const CenteredHeader(this.title, {super.key, this.isSorted = false});
 
   @override
   Widget build(BuildContext context) {

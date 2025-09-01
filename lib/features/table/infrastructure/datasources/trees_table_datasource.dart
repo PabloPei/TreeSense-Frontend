@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:treesense/core/theme/app_theme.dart';
-import 'package:treesense/features/table/presentation/widgets/table_parts/centered_header.dart';
-import 'package:treesense/features/table/presentation/widgets/table_parts/mini_actions_popover.dart';
-import 'package:treesense/features/tree/domain/entities/tree.dart';
-import 'package:treesense/features/table/infrastructure/datasources/trees_table_datasource.dart';
 import 'package:treesense/features/table/presentation/widgets/view_models/tree_row_vm.dart';
-import 'package:treesense/shared/utils/app_utils.dart';
-import 'package:treesense/core/theme/format.dart';
-import 'package:treesense/core/theme/app_theme.dart';
 import 'package:treesense/core/theme/font_conf.dart';
 
 class TreesDataSource extends DataTableSource {
@@ -15,7 +7,7 @@ class TreesDataSource extends DataTableSource {
   final void Function(String message) onShowMessage;
   final void Function(TreeRowVM row, TapDownDetails details) onIdTapDown;
 
-  int? _hoveredIndex; // para el hover en la celda del ID
+  int? _hoveredIndex; // hover en celda ID
 
   TreesDataSource(
     this._rows, {
@@ -47,7 +39,6 @@ class TreesDataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        // ID con hover “pill” y TapDown para posicionar popover
         DataCell(
           Center(
             child: MouseRegion(
@@ -71,7 +62,6 @@ class TreesDataSource extends DataTableSource {
                             ? [
                               BoxShadow(
                                 blurRadius: 4,
-                                spreadRadius: 0,
                                 offset: const Offset(0, 1),
                                 color: Colors.black.withOpacity(0.08),
                               ),
