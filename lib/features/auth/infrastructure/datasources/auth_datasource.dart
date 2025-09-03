@@ -91,6 +91,7 @@ class AuthDatasourceImpl implements AuthDatasource {
     }
   }
 
+  @override
   Future<void> changePassword(
     String currentPassword,
     String newPassword,

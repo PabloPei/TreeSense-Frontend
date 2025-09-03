@@ -11,8 +11,9 @@
 
     "language": "Lenguaje",
     "see_profile": "Ver Perfil",
+    "logout": "Cerrar Sesión",
 
-
+    "back_tooltip": "Atrás",
 
     "export": "Exportar"
 }

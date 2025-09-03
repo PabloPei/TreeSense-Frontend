@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:treesense/features/tree/domain/usecases/get_attribute_values.dart';
 import 'package:treesense/features/tree/domain/usecases/get_species_values.dart';
 import 'package:treesense/features/tree/domain/usecases/get_uploaded_tree_byuser.dart';
+import 'package:treesense/features/tree/domain/usecases/save_tree.dart';
+import 'package:treesense/features/tree/domain/usecases/get_all_trees_paginated.dart';
 import 'package:treesense/features/tree/infrastructure/datasources/tree_datasource.dart';
 import 'package:treesense/features/tree/domain/repositories/tree_repository.dart';
 import 'package:treesense/features/tree/infrastructure/repositories/tree_repository_impl.dart';
-import 'package:treesense/features/tree/domain/usecases/save_tree.dart';
 import 'package:treesense/features/tree/presentation/state/tree_controller.dart';
 import 'package:treesense/features/tree/presentation/state/tree_state.dart';
 import 'package:treesense/features/tree/domain/entities/tree.dart';
@@ -149,4 +150,11 @@ final treeTypeProvider = AutoDisposeFutureProvider<List<AttributeValue>>((
 ) async {
   final useCase = ref.read(getAttributeValuesUseCaseProvider);
   return await useCase("type");
+});
+
+final getAllTreesPaginatedUseCaseProvider = Provider<GetAllTreesPaginated>((
+  ref,
+) {
+  final repo = ref.read(treeRepositoryProvider);
+  return GetAllTreesPaginated(repo);
 });

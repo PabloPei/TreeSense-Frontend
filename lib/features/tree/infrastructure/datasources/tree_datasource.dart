@@ -9,6 +9,7 @@ import 'package:treesense/features/tree/infrastructure/models/tree_impl.dart';
 import 'package:treesense/features/tree/infrastructure/models/attribute_value_impl.dart';
 import 'package:treesense/features/tree/infrastructure/models/species_value_impl.dart';
 import 'package:treesense/shared/utils/app_utils.dart';
+import 'package:treesense/features/tree/infrastructure/models/paginated_trees.dart';
 
 class TreeDatasource {
   final AuthStorage _authStorage = AuthStorage();
@@ -193,5 +194,62 @@ class TreeDatasource {
     } else {
       throw Exception("${response.statusCode}: ${response.body}");
     }
+  }
+
+  Future<PaginatedTrees> getTreesPaginated({
+    required int offset,
+    required int limit,
+  }) async {
+    final token = await _authStorage.getAccessToken();
+    if (token == null) throw Exception(MessageLoader.get('error_access_token'));
+
+    final url = Uri.parse('${ApiConfig.baseUrl}/tree/all').replace(
+      queryParameters: {
+        'offset': '$offset',
+        'limit': '$limit',
+        // si más adelante agregás sort/filtros:
+        // if (sortBy != null) 'sortBy': sortBy,
+        // if (sortBy != null) 'order' : descending ? 'desc' : 'asc',
+        // ...?filters,
+      },
+    );
+
+    final res = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (res.statusCode != 200) {
+      // intenta parsear un posible JSON de error; si no, muestra el body crudo
+      try {
+        final err = jsonDecode(res.body);
+        if (err is Map && err['error'] != null) {
+          throw Exception('${res.statusCode}: ${err['error']}');
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      throw Exception('${res.statusCode}: ${res.body}');
+    }
+
+    final body = jsonDecode(res.body);
+    if (body is! Map || body['trees'] is! List) {
+      throw Exception(
+        'Formato inesperado: se esperaba { "trees": [...], "total": number }',
+      );
+    }
+
+    final list = (body['trees'] as List).cast<Map<String, dynamic>>();
+    final items = list.map(TreeImpl.fromJson).toList();
+
+    // total viene en el body; si algún día lo mandás también en header, podés priorizarlo:
+    final totalInBody = (body['total'] as num?)?.toInt();
+    final totalHeader = int.tryParse(res.headers['x-total-count'] ?? '');
+    final total = totalHeader ?? totalInBody ?? items.length;
+
+    return PaginatedTrees(items: items, total: total);
   }
 }

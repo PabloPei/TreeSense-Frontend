@@ -3,30 +3,30 @@ import 'package:treesense/features/table/presentation/widgets/table_config/mini_
 import 'package:treesense/features/table/presentation/widgets/table_config/table_layout.dart';
 import 'package:treesense/features/table/presentation/widgets/table_config/trees_columns.dart';
 import 'package:treesense/features/table/presentation/widgets/table_config/table_theme.dart';
-import 'package:treesense/features/tree/domain/entities/tree.dart';
 import 'package:treesense/features/table/infrastructure/datasources/trees_table_datasource.dart';
-import 'package:treesense/features/table/presentation/widgets/view_models/tree_row_vm.dart';
-import 'package:treesense/shared/utils/app_utils.dart';
-import 'package:treesense/core/theme/format.dart';
-import 'package:treesense/core/theme/app_theme.dart';
-import 'package:treesense/core/theme/font_conf.dart';
+import 'package:treesense/features/table/infrastructure/models/view_models/tree_row_vm.dart';
+
+import 'dart:ui' show PointerDeviceKind;
 
 class TreesTable extends StatefulWidget {
   final List<TreeRowVM> rows;
-  final int initialRowsPerPage;
+  final int offset;
+  final int total;
+  final int rowsPerPage;
+
+  // callbacks para paginación server-side
+  final ValueChanged<int> onRowsPerPageChanged;
+  final ValueChanged<int> onPageChanged;
 
   const TreesTable({
     super.key,
     required this.rows,
-    this.initialRowsPerPage = 25,
+    required this.offset,
+    required this.total,
+    required this.rowsPerPage,
+    required this.onRowsPerPageChanged,
+    required this.onPageChanged,
   });
-
-  factory TreesTable.sample({int count = 200, int initialRowsPerPage = 25}) {
-    return TreesTable(
-      rows: TreeRowVM.sample(count),
-      initialRowsPerPage: initialRowsPerPage,
-    );
-  }
 
   @override
   State<TreesTable> createState() => _TreesTableState();
@@ -37,7 +37,6 @@ class _TreesTableState extends State<TreesTable> {
   final ScrollController _hController = ScrollController();
 
   late TreesDataSource _dataSource;
-  int _rowsPerPage = 25;
   int? _sortColumnIndex;
   bool _sortAscending = true;
 
@@ -47,10 +46,8 @@ class _TreesTableState extends State<TreesTable> {
   @override
   void initState() {
     super.initState();
-    _rowsPerPage = widget.initialRowsPerPage;
 
     _dataSource = TreesDataSource(
-      widget.rows,
       onShowMessage: _showMessage,
       onIdTapDown: (row, details) {
         final box = _stackKey.currentContext!.findRenderObject() as RenderBox;
@@ -73,6 +70,16 @@ class _TreesTableState extends State<TreesTable> {
   }
 
   @override
+  void didUpdateWidget(covariant TreesTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _dataSource.updateFromState(
+      rows: widget.rows,
+      offset: widget.offset,
+      total: widget.total,
+    );
+  }
+
+  @override
   void dispose() {
     _hController.dispose();
     super.dispose();
@@ -90,12 +97,21 @@ class _TreesTableState extends State<TreesTable> {
     setState(() {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
-      _dataSource.sort<T>(getField, ascending);
+      _dataSource.sort<T>(
+        getField,
+        ascending,
+      ); //TODO: cambiar con el sort server-side
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    _dataSource.updateFromState(
+      rows: widget.rows,
+      offset: widget.offset,
+      total: widget.total,
+    );
+
     final columns = TreesColumns.build(
       sortColumnIndex: _sortColumnIndex,
       sort: _sort,
@@ -108,28 +124,46 @@ class _TreesTableState extends State<TreesTable> {
         children: [
           TreesTableLayoutBuilder(
             columnsCount: columns.length,
-            currentRowsPerPage: _rowsPerPage,
+            currentRowsPerPage: widget.rowsPerPage,
             builder: (context, layout) {
-              return Scrollbar(
-                controller: _hController,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
+              return ScrollConfiguration(
+                behavior: const MaterialScrollBehavior().copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.trackpad,
+                    PointerDeviceKind.stylus,
+                  },
+                ),
+                child: Scrollbar(
                   controller: _hController,
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: layout.tableWidth,
-                    height: layout.tableHeight,
-                    child: PaginatedDataTable(
-                      showCheckboxColumn: false,
-                      rowsPerPage: layout.effectiveRowsPerPage,
-                      availableRowsPerPage: layout.rowsOptions,
-                      onRowsPerPageChanged: (v) {
-                        if (v != null) setState(() => _rowsPerPage = v);
-                      },
-                      sortColumnIndex: _sortColumnIndex,
-                      sortAscending: _sortAscending,
-                      columns: columns,
-                      source: _dataSource,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: _hController,
+                    scrollDirection: Axis.horizontal,
+
+                    child: SizedBox(
+                      width: layout.tableWidth,
+                      height: layout.tableHeight,
+                      child: PaginatedDataTable(
+                        showCheckboxColumn: false,
+
+                        // paginación server-side
+                        rowsPerPage: layout.effectiveRowsPerPage,
+                        availableRowsPerPage: layout.rowsOptions,
+                        onRowsPerPageChanged: (v) {
+                          if (v != null) widget.onRowsPerPageChanged(v);
+                        },
+                        onPageChanged: (firstRowIndex) {
+                          widget.onPageChanged(firstRowIndex);
+                        },
+
+                        sortColumnIndex: _sortColumnIndex,
+                        sortAscending: _sortAscending,
+                        columns: columns,
+
+                        source: _dataSource,
+                      ),
                     ),
                   ),
                 ),
@@ -137,7 +171,7 @@ class _TreesTableState extends State<TreesTable> {
             },
           ),
 
-          // popover
+          // close the popover
           if (_selected != null && _anchor != null)
             Positioned.fill(
               child: GestureDetector(

@@ -5,36 +5,29 @@ import 'package:treesense/core/theme/font_conf.dart';
 
 //TODO: ver de hacer un selector de theme
 class TableTheme {
-  /// Tema claro (light). Usa tus colores por defecto si están disponibles.
   static ThemeData light(
     BuildContext context, {
-    Color? headingBg, // fondo del header
-    Color? tableBg, // fondo de filas
+    Color? headingBg, // header background colour
+    Color? tableBg, // row background colour
     Color? dividerColor,
   }) {
     final base = Theme.of(context);
     return base.copyWith(
       dataTableTheme: DataTableThemeData(
-        headingRowColor: MaterialStateProperty.all(
-          headingBg ?? columnTitleColor, // tu color existente
-        ),
+        headingRowColor: WidgetStateProperty.all(headingBg ?? columnTitleColor),
         headingTextStyle: AppTextStyles.columnTitleTextStyle.copyWith(
           color: Colors.white,
         ),
         dataTextStyle: AppTextStyles.rowDataTextStyle,
         dataRowMinHeight: TableConstants.rowH,
         dataRowMaxHeight: TableConstants.rowH,
-        dataRowColor: MaterialStateProperty.all(
-          tableBg ?? tableColor, // tu color existente para filas
-        ),
+        dataRowColor: WidgetStateProperty.all(tableBg ?? tableColor),
         dividerThickness: 2.5,
       ),
       dividerColor: dividerColor ?? Colors.black26,
-      // No cambiamos brightness aquí; respetamos el tema global.
     );
   }
 
-  /// Tema oscuro (dark). Asegura buen contraste.
   static ThemeData dark(
     BuildContext context, {
     Color? headingBg,
@@ -44,23 +37,23 @@ class TableTheme {
     final base = Theme.of(context);
     final scheme = base.colorScheme;
 
-    // Defaults “seguros” en dark: header con primary, filas con surfaceVariant translúcido.
-    final _heading = headingBg ?? scheme.primary;
-    final _table = tableBg ?? scheme.surfaceVariant.withOpacity(0.20);
+    final heading = headingBg ?? scheme.primary;
+    final table =
+        tableBg ?? scheme.surfaceContainerHighest.withValues(alpha: 0.20);
 
     return base.copyWith(
       brightness: Brightness.dark,
       dataTableTheme: DataTableThemeData(
-        headingRowColor: MaterialStateProperty.all(_heading),
+        headingRowColor: WidgetStateProperty.all(heading),
         headingTextStyle: AppTextStyles.columnTitleTextStyle.copyWith(
           color: Colors.white,
         ),
         dataTextStyle: AppTextStyles.rowDataTextStyle.copyWith(
-          color: scheme.onSurface, // asegura contraste en dark
+          color: scheme.onSurface,
         ),
         dataRowMinHeight: TableConstants.rowH,
         dataRowMaxHeight: TableConstants.rowH,
-        dataRowColor: MaterialStateProperty.all(_table),
+        dataRowColor: WidgetStateProperty.all(table),
         dividerThickness: 2.0,
       ),
       dividerColor: dividerColor ?? Colors.white12,

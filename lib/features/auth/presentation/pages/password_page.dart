@@ -22,7 +22,7 @@ class _ChangePasswordFieldState extends ConsumerState<ChangePasswordPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   void dispose() {

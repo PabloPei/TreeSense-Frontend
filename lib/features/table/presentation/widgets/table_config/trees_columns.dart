@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:treesense/features/table/presentation/widgets/table_config/centered_header.dart';
-import 'package:treesense/features/table/presentation/widgets/view_models/tree_row_vm.dart';
+import 'package:treesense/features/table/infrastructure/models/view_models/tree_row_vm.dart';
 
 typedef SortCallback =
     void Function<T>(
@@ -12,7 +12,7 @@ typedef SortCallback =
 class TreesColumns {
   static List<DataColumn> build({
     required int? sortColumnIndex,
-    required SortCallback sort, // 👈 ahora es la función genérica
+    required SortCallback sort,
   }) {
     return <DataColumn>[
       DataColumn(
